@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AchaPro - Marketplace de Serviços
 
-## Getting Started
+O **AchaPro** é uma plataforma que conecta clientes a prestadores de serviços de forma rápida e segura. Este projeto é um MVP (Produto Mínimo Viável) desenvolvido como parte do trabalho de Garantia de Qualidade de Software, focado na aplicação de processos rigorosos de engenharia (Scrum, TSP) e arquitetura moderna.
 
-First, run the development server:
+## 🎯 Objetivo
+Desenvolver um protótipo funcional que permita:
+1.  **Clientes:** Postar tarefas, receber propostas, contratar prestadores e avaliar o serviço.
+2.  **Prestadores:** Encontrar oportunidades de trabalho, enviar orçamentos e negociar via chat.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🛠️ Stack Tecnológica & Arquitetura
+
+O projeto segue uma arquitetura **Serverless e Modular** definida no Documento de Arquitetura de Software (DAS):
+
+*   **Frontend:** [Next.js 16](https://nextjs.org/) (App Router, React Server Components).
+*   **Estilização:** [Tailwind CSS](https://tailwindcss.com/).
+*   **Autenticação:** [Clerk](https://clerk.com/) (Gestão de Identidade e Segurança).
+*   **Backend & Banco de Dados:** [Supabase](https://supabase.com/) (PostgreSQL, Storage, Realtime).
+*   **ORM:** [Prisma](https://www.prisma.io/) (Modelagem de Dados).
+*   **Linguagem:** TypeScript.
+
+## 📋 Requisitos do Sistema
+
+### Funcionais (Core Features)
+- [ ] **RF01:** Cadastro de Usuários (Cliente/Prestador).
+- [ ] **RF02:** Gestão de Perfil de Prestador (Bio, Fotos).
+- [ ] **RF03:** Publicação de Tarefas pelo Cliente.
+- [ ] **RF04:** Listagem de Tarefas disponíveis para Prestadores.
+- [ ] **RF05:** Envio de Propostas de orçamento.
+- [ ] **RF06:** Aceite/Recusa de propostas.
+- [ ] **RF07:** Chat em Tempo Real (pós-contratação).
+- [ ] **RF08:** Marcação de serviço como Concluído.
+- [ ] **RF09:** Sistema de Avaliação (Rating & Review).
+
+### Não Funcionais (Qualidade)
+- **Performance:** Carregamento inicial < 2s.
+- **Segurança:** Senhas criptografadas e comunicação HTTPS.
+- **Usabilidade:** Fluxo de postagem intuitivo (< 3 min).
+
+## 🚀 Como Rodar o Projeto
+
+### Pré-requisitos
+- Node.js 18+
+- Conta no Clerk (para chaves de API)
+- Conta no Supabase (para URL e Anon Key)
+
+### Instalação
+
+1.  Clone o repositório:
+    ```bash
+    git clone https://github.com/seu-usuario/achapro.git
+    cd achapro
+    ```
+
+2.  Instale as dependências:
+    ```bash
+    npm install
+    ```
+
+3.  Configure as variáveis de ambiente:
+    Crie um arquivo `.env.local` na raiz e adicione:
+    ```env
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+    CLERK_SECRET_KEY=sk_test_...
+    NEXT_PUBLIC_SUPABASE_URL=https://...supabase.co
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+    DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-ID].supabase.co:6543/postgres?pgbouncer=true"
+    DIRECT_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-ID].supabase.co:5432/postgres"
+    ```
+
+4.  Execute o servidor de desenvolvimento:
+    ```bash
+    npm run dev
+    ```
+
+5.  Acesse `http://localhost:3000`.
+
+## 📂 Estrutura do Projeto
+
+```
+src/
+├── app/            # Rotas e Páginas (Next.js App Router)
+├── components/     # Componentes React Reutilizáveis
+├── lib/            # Configurações de infra (Supabase, Utils)
+├── types/          # Definições de Tipos TypeScript
+└── middleware.ts   # Proteção de rotas (Clerk)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+**Equipe:** Filipe B (PO), Lucas M (Dev Sr), João C (Dev Pl), Daniela L (Dev Pl), Cleiton V (QA).
