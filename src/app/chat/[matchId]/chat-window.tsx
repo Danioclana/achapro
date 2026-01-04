@@ -54,9 +54,31 @@ export default function ChatWindow({
         filter: `matchId=eq.${matchId}`
       }, (payload) => {
         const newMsg = payload.new as { id: string; content: string; senderId: string; createdAt: string }
-        // Check if we already have this message (optimistic update or duplicates)
+        
         setMessages((prev) => {
+            // Check if we already have this message by ID
             if (prev.some(m => m.id === newMsg.id)) return prev
+            
+            // Deduplication strategy for optimistic updates:
+            // If we have a message with same content from same sender created in last 2 seconds, assume it's the optimistic one confirmed.
+            // (This is a heuristic for MVP)
+            const isOptimisticDuplicate = prev.some(m => 
+                m.senderId === newMsg.senderId && 
+                m.content === newMsg.content &&
+                Math.abs(new Date(m.createdAt).getTime() - new Date(newMsg.createdAt).getTime()) < 5000 // 5 sec window
+            )
+
+            if (isOptimisticDuplicate) {
+                // Ideally we replace the temp ID with real ID here, but React state update is tricky.
+                // We'll just return prev to avoid double rendering the same text.
+                // A better approach would be to swap the item.
+                return prev.map(m => 
+                    (m.senderId === newMsg.senderId && m.content === newMsg.content) 
+                    ? { ...m, id: newMsg.id, createdAt: new Date(newMsg.createdAt) } 
+                    : m
+                )
+            }
+
             return [...prev, {
                 id: newMsg.id,
                 content: newMsg.content,
@@ -78,21 +100,40 @@ export default function ChatWindow({
 
     setSending(true)
     const content = newMessage
+    const tempId = crypto.randomUUID()
+    
+    // Optimistic update: Add message immediately to UI
+    const optimisticMsg: Message = {
+        id: tempId,
+        content: content,
+        senderId: currentUserId,
+        createdAt: new Date()
+    }
 
-    // Optimistic update
-    /* 
-       Optimistic update is tricky because we need the real ID for keys, 
-       but let's just wait for server action or realtime.
-       Actually, for better UX, we should clear input immediately.
-    */
+    setMessages(prev => [...prev, optimisticMsg])
     setNewMessage("")
 
     try {
       await sendMessage(matchId, content)
-      // Realtime listener will catch the echo back or page revalidation
+      // We rely on the server action revalidation or subsequent fetch to confirm.
+      // Ideally, the realtime event will come in and might duplicate if we don't handle IDs carefully.
+      // But since we use a temp ID, the real message from DB will have a different ID.
+      // We should replace the temp message with the real one if we could, but for this MVP:
+      // The Realtime listener will receive the 'INSERT' with the REAL ID.
+      // We need to filter out the optimistic message once the real one arrives? 
+      // Or just let the list refresh. 
+      
+      // Actually, simplest 'fix' for MVP without complex state management:
+      // Don't add optimistic message if we trust Realtime is fast. 
+      // BUT user said "parece que não está indo". So optimistic is good.
+      
+      // Let's refine the Realtime listener to deduplicate better or ignore the optimistic one if possible.
+      // For now, let's keep the optimistic one and when the realtime event comes (or page refresh), it corrects.
     } catch (error) {
       console.error("Failed to send", error)
       alert("Falha ao enviar mensagem")
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m.id !== tempId))
     } finally {
       setSending(false)
     }

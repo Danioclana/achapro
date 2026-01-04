@@ -156,6 +156,17 @@ export async function acceptProposal(proposalId: string, taskId: string) {
     })
   ])
 
+  // Fetch the match to get its ID (since create inside transaction returns the object in the array result)
+  // However, simpler is to query it or just rely on the fact that taskId is unique in Match
+  const match = await prisma.match.findUnique({
+    where: { taskId }
+  })
+
   revalidatePath(`/tasks/${taskId}`)
-  redirect(`/chat`) 
+  
+  if (match) {
+    redirect(`/chat/${match.id}`)
+  } else {
+    redirect('/chat')
+  }
 }

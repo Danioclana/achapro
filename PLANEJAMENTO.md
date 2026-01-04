@@ -52,6 +52,7 @@ A solução adota uma arquitetura **Serverless e Modular**, focada em rapidez de
 *   **RF07 - Chat:** Chat disponibilizado entre as partes após o aceite da proposta.
 *   **RF08 - Conclusão:** Cliente marca o serviço como "Concluído".
 *   **RF09 - Avaliação:** Cliente avalia o Prestador (nota 1-5 e comentário).
+*   **RF10 - Perfil Público:** Qualquer usuário pode visualizar o perfil público de um prestador com histórico e avaliações.
 
 ### Requisitos Não Funcionais (Como o sistema se comporta)
 *   **NFR01 (Desempenho):** Carregamento de telas principais < 2 segundos.
@@ -103,7 +104,7 @@ O desenvolvimento segue a divisão de tarefas definida no Planejamento TSP da eq
     *   **Fluxo de Proposta:** Prestador envia valor e texto na tela de detalhes da tarefa.
     *   **Gestão (Cliente):** Cliente vê lista de propostas na sua tarefa e clica em "Aceitar".
     *   **Criação de Match:** Ao aceitar, sistema cria registro na tabela `matches` e libera o chat.
-    *   **Chat Realtime:** Interface de chat usando `supabase.channel` para escutar novas mensagens na tabela `messages` sem precisar recarregar a página (Polling zero, conforme arquitetura).
+    *   **Chat Realtime:** Interface de chat integrada em barra lateral (desktop) ou menu inferior persistente (mobile) estilo redes sociais (Facebook/Instagram), permitindo acesso rápido às conversas sem sair da navegação principal. Uso de `supabase.channel`.
 
 ### ⭐ Épico 5: Sistema de Avaliação (Estimativa: 8 pts)
 **Foco:** RF08 (Conclusão) e RF09 (Avaliação).
@@ -112,9 +113,11 @@ O desenvolvimento segue a divisão de tarefas definida no Planejamento TSP da eq
     *   **Feedback:** Modal solicitando Nota (1-5) e Comentário.
     *   **Persistência:** Salvar em `reviews` e atualizar reputação do prestador.
 
-### 🧪 Épico 6: Qualidade e Testes (Contínuo)
-**Foco:** Metas de Qualidade (Cobertura de Testes e Zero Bugs Críticos).
-*   **Estratégia:**
-    *   Testes Unitários (Jest/Vitest) para regras de negócio e componentes isolados.
-    *   Code Reviews obrigatórios antes de merge (simulado via verificação de padrões).
-    *   Verificação de Acessibilidade e Performance (Lighthouse) para garantir NFR01.
+### 🚀 Épico 6: Perfil Público do Profissional (Estimativa: 13 pts)
+**Foco:** RF10 (Perfil Público) e Engajamento.
+*   **Implementação:**
+    *   **Página Pública:** Rota dinâmica `/profile/[id]` acessível a todos.
+    *   **Conteúdo do Perfil:** Exibição da Foto, Bio, Categoria de Serviço, e Selo de Verificação (se houver).
+    *   **Portfólio Visual:** Galeria de fotos de trabalhos anteriores realizados (buscados da tabela `tasks` concluídas ou upload manual).
+    *   **Sistema de Reputação:** Exibição da Nota Média (Estrelas) e lista de comentários deixados por clientes anteriores (tabela `reviews`).
+    *   **CTA (Call to Action):** Botão para "Convidar para Tarefa" (se o visualizador for um cliente com tarefa aberta).

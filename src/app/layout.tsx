@@ -3,6 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "@/components/navbar";
+import ChatWidget from "@/components/chat/chat-widget";
 import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -25,6 +26,7 @@ export default function RootLayout({
             <main className="min-h-screen bg-gray-50">
                 {children}
             </main>
+            <ChatWidget />
             <Toaster richColors position="top-center" />
         </body>
       </html>
