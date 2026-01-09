@@ -30,6 +30,50 @@ export async function sendMessage(matchId: string, content: string) {
   revalidatePath(`/chat/${matchId}`)
 }
 
+export async function markMessagesAsRead(matchId: string) {
+  const { userId } = await auth()
+  if (!userId) throw new Error("Unauthorized")
+
+  await prisma.message.updateMany({
+    where: {
+      matchId: matchId,
+      senderId: {
+        not: userId, // Only mark messages sent by the other person as read
+      },
+      isRead: false,
+    },
+    data: {
+      isRead: true,
+    },
+  })
+
+  // Revalidate the path that shows unread counts, if necessary
+  // For now, we will rely on client-side state updates after this call
+}
+
+export async function getUnreadMessageCount() {
+    const { userId } = await auth()
+    if (!userId) return 0
+    
+    const count = await prisma.message.count({
+        where: {
+            match: {
+                OR: [
+                    { clientId: userId },
+                    { providerId: userId }
+                ]
+            },
+            senderId: {
+                not: userId
+            },
+            isRead: false
+        }
+    })
+
+    return count
+}
+
+
 export async function getMatches() {
   const { userId } = await auth()
   if (!userId) return []
@@ -42,15 +86,35 @@ export async function getMatches() {
       ]
     },
     include: {
-      task: true,
-      client: true,
-      provider: true,
+      task: {
+        select: { title: true }
+      },
+      client: {
+        select: { id: true, name: true, avatarUrl: true }
+      },
+      provider: {
+        select: { id: true, name: true, avatarUrl: true }
+      },
       messages: {
         orderBy: { createdAt: 'desc' },
         take: 1
+      },
+      _count: {
+        select: {
+          messages: {
+            where: {
+              isRead: false,
+              senderId: { not: userId }
+            }
+          }
+        }
       }
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: {
+      messages: {
+        _count: 'desc' // Prioritize matches with recent messages, although createdAt on match is better
+      }
+    }
   })
 
   return matches.map(match => {
@@ -61,7 +125,8 @@ export async function getMatches() {
         otherUserName: otherUser.name,
         otherUserAvatar: otherUser.avatarUrl,
         taskTitle: match.task.title,
-        lastMessage: match.messages[0]?.content || "Inicie a conversa"
+        lastMessage: match.messages[0]?.content || "Inicie a conversa",
+        unreadCount: match._count.messages
     }
   })
 }
@@ -88,6 +153,7 @@ export async function getMessages(matchId: string) {
     id: msg.id,
     content: msg.content,
     senderId: msg.senderId,
-    createdAt: msg.createdAt
+    createdAt: msg.createdAt,
+    isRead: msg.isRead
   }))
 }

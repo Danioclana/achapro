@@ -15,37 +15,36 @@ interface MatchPreview {
     otherUserAvatar: string | null
     taskTitle: string
     lastMessage: string
+    unreadCount: number
 }
 
 export default function ChatWidget() {
   const { isSignedIn } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [matches, setMatches] = useState<MatchPreview[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [totalUnread, setTotalUnread] = useState(0)
   
   // State for open docked windows
   const [activeMatches, setActiveMatches] = useState<MatchPreview[]>([])
 
   const fetchMatches = async () => {
+      if (!isSignedIn) return;
       try {
           const data = await getMatches()
           setMatches(data)
+          const total = data.reduce((sum, match) => sum + match.unreadCount, 0);
+          setTotalUnread(total);
       } catch (error) {
           console.error("Failed to load matches", error)
+      } finally {
+          setLoading(false)
       }
   }
 
   useEffect(() => {
-    if (isSignedIn) {
-        // Fetch initially even if closed to be ready? Or only when open?
-        // Let's fetch when open to save resources, but if we want the badge count later we need it.
-        // For now, fetch when open.
-        if(isOpen) {
-            setLoading(true)
-            fetchMatches().finally(() => setLoading(false))
-        }
-    }
-  }, [isSignedIn, isOpen])
+    fetchMatches()
+  }, [isSignedIn])
 
   useEffect(() => {
       if (!isSignedIn) return
@@ -92,6 +91,7 @@ export default function ChatWidget() {
                 otherUserAvatar={match.otherUserAvatar}
                 taskTitle={match.taskTitle}
                 onClose={() => closeChat(match.id)}
+                initialUnreadCount={match.unreadCount}
               />
           ))}
       </div>
@@ -147,6 +147,11 @@ export default function ChatWidget() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-baseline mb-0.5">
                                         <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-600 transition">{match.otherUserName}</p>
+                                        {match.unreadCount > 0 && (
+                                            <span className="ml-2 bg-blue-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                                                {match.unreadCount}
+                                            </span>
+                                        )}
                                     </div>
                                     <p className="text-xs text-blue-600 font-medium truncate mb-1">{match.taskTitle}</p>
                                     <p className="text-xs text-gray-600 truncate">{match.lastMessage}</p>
@@ -161,9 +166,14 @@ export default function ChatWidget() {
 
         <button
             onClick={() => setIsOpen(!isOpen)}
-            className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center justify-center"
+            className="relative bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center justify-center"
         >
             {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
+            {totalUnread > 0 && !isOpen && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">
+                    {totalUnread}
+                </span>
+            )}
         </button>
       </div>
     </div>

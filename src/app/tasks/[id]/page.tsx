@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import Image from "next/image"
-import Link from "next/link"
+import TransitionLink from "@/components/transition-link"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { auth } from "@clerk/nextjs/server"
@@ -226,9 +226,9 @@ export default async function TaskDetailsPage(props: TaskDetailsPageProps) {
                 ) : isTaskInProgress && task.match?.providerId === userId ? (
                    <div className="text-center">
                       <p className="text-sm text-blue-600 font-medium mb-3">Você está realizando este serviço!</p>
-                      <Link href={`/chat/${task.match.id}`} className="inline-flex items-center text-sm text-blue-600 hover:underline">
+                      <TransitionLink href={`/chat/${task.match.id}`} className="inline-flex items-center text-sm text-blue-600 hover:underline">
                          Ir para o chat →
-                      </Link>
+                      </TransitionLink>
                    </div>
                 ) : (
                    <p className="text-sm text-gray-500 text-center">

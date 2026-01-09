@@ -47,6 +47,10 @@ export async function createTask(formData: FormData) {
   const imageUrlsRaw = formData.get("imageUrls") as string 
   const imageUrls = imageUrlsRaw ? JSON.parse(imageUrlsRaw) : []
 
+  if (imageUrls.length > 5) {
+    throw new Error("Não é possível criar uma tarefa com mais de 5 imagens.")
+  }
+
   if (!title || !description || !category) {
     throw new Error("Missing required fields")
   }

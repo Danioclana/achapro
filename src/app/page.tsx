@@ -1,4 +1,5 @@
-import Link from "next/link"
+import { CATEGORIES } from "@/lib/categories";
+import TransitionLink from "@/components/transition-link"
 import { Search, ShieldCheck, Zap } from "lucide-react"
 import { auth } from "@clerk/nextjs/server"
 
@@ -7,6 +8,8 @@ export default async function LandingPage() {
   
   // Optional: Redirect logged in users to dashboard/tasks
   // if (userId) redirect("/tasks")
+
+  const popularCategories = CATEGORIES.filter(c => c !== 'Outros');
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -27,18 +30,18 @@ export default async function LandingPage() {
               </p>
               <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link
+                  <TransitionLink
                     href="/tasks/new"
                     className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10 shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5"
                   >
                     Pedir um Serviço
-                  </Link>
-                  <Link
+                  </TransitionLink>
+                  <TransitionLink
                     href="/tasks"
                     className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 md:py-4 md:text-lg md:px-10 transition"
                   >
                     Sou Profissional
-                  </Link>
+                  </TransitionLink>
                 </div>
                 <p className="mt-3 text-sm text-gray-600">
                   Cadastre-se grátis hoje mesmo.
@@ -118,11 +121,11 @@ export default async function LandingPage() {
       <section className="bg-gray-50 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-8">Categorias Populares</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {['Limpeza', 'Manutenção', 'Aulas', 'Tecnologia', 'Reformas', 'Beleza', 'Eventos', 'Saúde'].map((cat) => (
-                    <Link key={cat} href={`/tasks?category=${cat}`} className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition text-center border border-gray-100">
-                        <span className="font-medium text-gray-700">{cat}</span>
-                    </Link>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {popularCategories.map((cat) => (
+                    <TransitionLink key={cat} href={`/tasks?category=${encodeURIComponent(cat)}`} className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition text-center border border-gray-100">
+                        <span className="font-medium text-gray-700">{cat.replace(" Doméstica", "").replace(" e Estética", "")}</span>
+                    </TransitionLink>
                 ))}
             </div>
           </div>

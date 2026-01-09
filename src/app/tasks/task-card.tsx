@@ -1,4 +1,4 @@
-import Link from "next/link"
+import TransitionLink from "@/components/transition-link";
 import Image from "next/image"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -19,7 +19,7 @@ interface TaskCardProps {
 
 export default function TaskCard({ task }: TaskCardProps) {
   return (
-    <Link href={`/tasks/${task.id}`} className="block">
+    <TransitionLink href={`/tasks/${task.id}`} className="block">
       <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition duration-200 border border-gray-100 overflow-hidden h-full flex flex-col">
         {task.imageUrls && task.imageUrls.length > 0 ? (
           <div className="h-48 bg-gray-200 relative">
@@ -65,6 +65,6 @@ export default function TaskCard({ task }: TaskCardProps) {
           </div>
         </div>
       </div>
-    </Link>
+    </TransitionLink>
   )
 }

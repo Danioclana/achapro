@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react"
+import { useFormStatus } from "react-dom"
 import { supabase } from "@/lib/supabase"
 import { createTask } from "../actions"
 import imageCompression from 'browser-image-compression'
@@ -8,22 +9,39 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
-const CATEGORIES = [
-  "Manutenção Doméstica",
-  "Limpeza",
-  "Tecnologia",
-  "Aulas",
-  "Beleza e Estética",
-  "Transporte",
-  "Outros"
-]
+import { CATEGORIES } from "@/lib/categories"
+import LoadingSpinner from "@/components/loading-spinner"
+
+function SubmitButton({ uploading }: { uploading: boolean }) {
+  const { pending } = useFormStatus()
+
+  return (
+    <>
+      {pending && <LoadingSpinner />}
+      <button
+        type="submit"
+        disabled={pending}
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+      >
+        {pending ? (uploading ? 'Enviando fotos...' : 'Criando tarefa...') : 'Publicar Pedido'}
+      </button>
+    </>
+  )
+}
 
 export default function TaskForm() {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
   const [images, setImages] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
+  const [cep, setCep] = useState("")
+  const [address, setAddress] = useState({
+    bairro: "",
+    cidade: "",
+    uf: "",
+  })
+  const [cepLoading, setCepLoading] = useState(false)
+  const [cepError, setCepError] = useState("")
 
   // Cleanup previews to avoid memory leaks
   useEffect(() => {
@@ -32,9 +50,50 @@ export default function TaskForm() {
     }
   }, [previews])
 
+  const handleCepChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    let rawCepValue = e.target.value.replace(/\D/g, '')
+    
+    let maskedCepValue = rawCepValue;
+    if (rawCepValue.length > 5) {
+      maskedCepValue = rawCepValue.substring(0, 5) + '-' + rawCepValue.substring(5, 8);
+    }
+
+    setCep(maskedCepValue)
+    setAddress({ bairro: "", cidade: "", uf: "" })
+    setCepError("")
+
+    if (rawCepValue.length === 8) {
+      setCepLoading(true)
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${rawCepValue}/json/`)
+        if (!response.ok) throw new Error("Falha na rede")
+        const data = await response.json()
+        if (data.erro) {
+          setCepError("CEP não encontrado.")
+          toast.error("CEP não encontrado.")
+        } else {
+          setAddress({
+            bairro: data.bairro,
+            cidade: data.localidade,
+            uf: data.uf,
+          })
+        }
+      } catch (error) {
+        setCepError("Erro ao buscar CEP.")
+        toast.error("Erro ao buscar CEP. Tente novamente.")
+      } finally {
+        setCepLoading(false)
+      }
+    }
+  }
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files)
+      if (images.length + filesArray.length > 5) {
+        toast.error("Você pode enviar no máximo 5 imagens.")
+        return
+      }
       setImages(prev => [...prev, ...filesArray])
       
       const newPreviews = filesArray.map(file => URL.createObjectURL(file))
@@ -94,8 +153,16 @@ export default function TaskForm() {
   }
 
   const handleSubmit = async (formData: FormData) => {
-    setLoading(true)
-    setUploading(true)
+    if (!address.bairro || !address.cidade || !address.uf) {
+      toast.error("Por favor, preencha um CEP válido para definir a localização.")
+      // Optionally focus the CEP input
+      document.getElementById("cep")?.focus()
+      return
+    }
+
+    if (images.length > 0) {
+      setUploading(true)
+    }
     
     try {
       // 1. Upload Images
@@ -120,8 +187,9 @@ export default function TaskForm() {
          toast.error(error.message || "Falha ao criar tarefa. Tente novamente.")
       }
     } finally {
-        setLoading(false)
+      if (images.length > 0) {
         setUploading(false)
+      }
     }
   }
 
@@ -166,23 +234,77 @@ export default function TaskForm() {
         />
       </div>
 
-      <div>
-        <label htmlFor="location" className="block text-sm font-medium text-gray-700">Localização (Bairro/Cidade)</label>
-        <input
-          type="text"
-          name="location"
-          id="location"
-          placeholder="Ex: Centro, São Paulo"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="md:col-span-2">
+          <label htmlFor="cep" className="block text-sm font-medium text-gray-700">CEP</label>
+          <div className="relative">
+            <input
+              type="text"
+              name="cep"
+              id="cep"
+              value={cep}
+              onChange={handleCepChange}
+              maxLength={9}
+              required
+              placeholder="Ex: 12345-678"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            />
+            {cepLoading && (
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+            )}
+          </div>
+          {cepError && <p className="mt-1 text-sm text-red-600">{cepError}</p>}
+        </div>
+        <div className="md:col-span-2">
+          <label htmlFor="bairro" className="block text-sm font-medium text-gray-700">Bairro</label>
+          <input
+            type="text"
+            id="bairro"
+            value={address.bairro}
+            readOnly
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
+          />
+        </div>
+        <div>
+          <label htmlFor="cidade" className="block text-sm font-medium text-gray-700">Cidade</label>
+          <input
+            type="text"
+            id="cidade"
+            value={address.cidade}
+            readOnly
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
+          />
+        </div>
+        <div>
+          <label htmlFor="uf" className="block text-sm font-medium text-gray-700">Estado (UF)</label>
+          <input
+            type="text"
+            id="uf"
+            value={address.uf}
+            readOnly
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
+          />
+        </div>
+        {/* Hidden input to hold the standardized location string, which will be read by formData */}
+        <input type="hidden" name="location" value={address.bairro ? `${address.bairro}, ${address.cidade} - ${address.uf}` : ""} />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Fotos (Opcional)</label>
         <div className="flex items-center justify-center w-full">
-          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+          <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg ${images.length >= 5 ? 'bg-gray-200 cursor-not-allowed' : 'cursor-pointer bg-gray-50 hover:bg-gray-100'} transition`}>
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <p className="mb-2 text-sm text-gray-600"><span className="font-semibold">Clique para enviar</span></p>
+              <p className="mb-2 text-sm text-gray-600">
+                {images.length >= 5 
+                  ? 'Limite de 5 fotos atingido' 
+                  : <span className="font-semibold">Clique para enviar</span>
+                }
+              </p>
               <p className="text-xs text-gray-600">PNG, JPG or WEBP (MAX. 5 Fotos)</p>
             </div>
             <input 
@@ -191,6 +313,7 @@ export default function TaskForm() {
               multiple 
               accept="image/*"
               onChange={handleImageChange}
+              disabled={images.length >= 5}
             />
           </label>
         </div>
@@ -219,13 +342,7 @@ export default function TaskForm() {
         )}
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
-      >
-        {loading ? (uploading ? 'Enviando fotos...' : 'Criando tarefa...') : 'Publicar Pedido'}
-      </button>
+      <SubmitButton uploading={uploading} />
     </form>
   )
 }

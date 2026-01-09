@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
-import { sendMessage } from "../actions"
+import { sendMessage, markMessagesAsRead } from "../actions"
 import Image from "next/image"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -12,6 +12,7 @@ interface Message {
   content: string
   senderId: string
   createdAt: Date
+  isRead: boolean
 }
 
 interface ChatWindowProps {
@@ -43,6 +44,12 @@ export default function ChatWindow({
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    // Mark messages as read when the chat window is opened
+    markMessagesAsRead(matchId);
+  }, [matchId]);
+
 
   useEffect(() => {
     const channel = supabase
@@ -83,7 +90,8 @@ export default function ChatWindow({
                 id: newMsg.id,
                 content: newMsg.content,
                 senderId: newMsg.senderId,
-                createdAt: new Date(newMsg.createdAt)
+                createdAt: new Date(newMsg.createdAt),
+                isRead: false
             }]
         })
       })
@@ -107,7 +115,8 @@ export default function ChatWindow({
         id: tempId,
         content: content,
         senderId: currentUserId,
-        createdAt: new Date()
+        createdAt: new Date(),
+        isRead: true // Sender's own message is always "read"
     }
 
     setMessages(prev => [...prev, optimisticMsg])

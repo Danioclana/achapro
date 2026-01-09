@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { X, Send, Minimize2 } from "lucide-react"
 import Image from "next/image"
-import { getMessages, sendMessage } from "@/app/chat/actions"
+import { getMessages, sendMessage, markMessagesAsRead } from "@/app/chat/actions"
 import { supabase } from "@/lib/supabase"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -14,6 +14,7 @@ interface Message {
   content: string
   senderId: string
   createdAt: Date
+  isRead: boolean
 }
 
 interface DockedChatWindowProps {
@@ -22,6 +23,7 @@ interface DockedChatWindowProps {
   otherUserAvatar: string | null
   taskTitle: string
   onClose: () => void
+  initialUnreadCount: number
 }
 
 export default function DockedChatWindow({
@@ -29,7 +31,8 @@ export default function DockedChatWindow({
   otherUserName,
   otherUserAvatar,
   taskTitle,
-  onClose
+  onClose,
+  initialUnreadCount
 }: DockedChatWindowProps) {
   const { userId } = useAuth()
   const [messages, setMessages] = useState<Message[]>([])
@@ -37,6 +40,7 @@ export default function DockedChatWindow({
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -68,39 +72,24 @@ export default function DockedChatWindow({
 
   useEffect(() => {
     const channel = supabase
-      .channel(`chat:${matchId}`)
+      .channel(`chat_docked:${matchId}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
         table: 'messages',
         filter: `matchId=eq.${matchId}`
       }, (payload) => {
-        const newMsg = payload.new as { id: string; content: string; senderId: string; createdAt: string }
+        const newMsg = payload.new as Message
         
+        if (isMinimized) {
+            if (newMsg.senderId !== userId) {
+                setUnreadCount(prev => prev + 1)
+            }
+        }
+
         setMessages((prev) => {
             if (prev.some(m => m.id === newMsg.id)) return prev
-            
-            // Deduplication (Optimistic)
-            const isOptimisticDuplicate = prev.some(m => 
-                m.senderId === newMsg.senderId && 
-                m.content === newMsg.content &&
-                Math.abs(new Date(m.createdAt).getTime() - new Date(newMsg.createdAt).getTime()) < 5000
-            )
-
-            if (isOptimisticDuplicate) {
-                return prev.map(m => 
-                    (m.senderId === newMsg.senderId && m.content === newMsg.content) 
-                    ? { ...m, id: newMsg.id, createdAt: new Date(newMsg.createdAt) } 
-                    : m
-                )
-            }
-
-            return [...prev, {
-                id: newMsg.id,
-                content: newMsg.content,
-                senderId: newMsg.senderId,
-                createdAt: new Date(newMsg.createdAt)
-            }]
+            return [...prev, { ...newMsg, createdAt: new Date(newMsg.createdAt) }]
         })
       })
       .subscribe()
@@ -108,7 +97,7 @@ export default function DockedChatWindow({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [matchId])
+  }, [matchId, isMinimized, userId])
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -124,7 +113,8 @@ export default function DockedChatWindow({
         id: tempId,
         content: content,
         senderId: userId,
-        createdAt: new Date()
+        createdAt: new Date(),
+        isRead: true
     }
 
     setMessages(prev => [...prev, optimisticMsg])
@@ -140,12 +130,23 @@ export default function DockedChatWindow({
     }
   }
 
+  const handleMaximize = () => {
+    setIsMinimized(false);
+    setUnreadCount(0);
+    markMessagesAsRead(matchId);
+  }
+
   if (isMinimized) {
       return (
-          <div className="w-64 bg-white rounded-t-lg shadow-xl border border-gray-200 overflow-hidden flex flex-col pointer-events-auto">
+          <div className="w-64 bg-white rounded-t-lg shadow-xl border border-gray-200 overflow-hidden flex flex-col pointer-events-auto relative">
+             {unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">
+                    {unreadCount}
+                </span>
+             )}
              <div 
                 className="bg-white px-3 py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition"
-                onClick={() => setIsMinimized(false)}
+                onClick={handleMaximize}
             >
                 <div className="flex items-center gap-2 overflow-hidden">
                     <div className="relative w-6 h-6 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">

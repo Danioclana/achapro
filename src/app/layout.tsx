@@ -5,6 +5,8 @@ import { Inter } from "next/font/google";
 import Navbar from "@/components/navbar";
 import ChatWidget from "@/components/chat/chat-widget";
 import { Toaster } from "sonner";
+import { PageTransitionProvider } from "@/context/page-transition-context";
+import GlobalLoadingIndicator from "@/components/global-loading-indicator";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,12 +24,15 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="pt-BR">
         <body className={inter.className}>
+          <PageTransitionProvider>
+            <GlobalLoadingIndicator />
             <Navbar />
             <main className="min-h-screen bg-gray-50">
-                {children}
+              {children}
             </main>
             <ChatWidget />
             <Toaster richColors position="top-center" />
+          </PageTransitionProvider>
         </body>
       </html>
     </ClerkProvider>
