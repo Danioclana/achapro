@@ -42,7 +42,7 @@ export default function TaskCard({ task }: TaskCardProps) {
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
               {task.category}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-600">
               {formatDistanceToNow(new Date(task.createdAt), { addSuffix: true, locale: ptBR })}
             </span>
           </div>
@@ -50,7 +50,7 @@ export default function TaskCard({ task }: TaskCardProps) {
           <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">{task.title}</h3>
           
           {task.location && (
-            <p className="text-sm text-gray-500 mb-4 flex items-center gap-1">
+            <p className="text-sm text-gray-600 mb-4 flex items-center gap-1">
               📍 {task.location}
             </p>
           )}

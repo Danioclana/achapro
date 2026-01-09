@@ -21,7 +21,7 @@ export default async function LandingPage() {
                 <span className="block">Serviços que você precisa,</span>
                 <span className="block text-blue-600">profissionais de confiança.</span>
               </h1>
-              <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+              <p className="mt-3 text-base text-gray-600 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                 Conecte-se com especialistas para reformas, limpeza, aulas e muito mais. 
                 Rápido, seguro e sem burocracia.
               </p>
@@ -40,7 +40,7 @@ export default async function LandingPage() {
                     Sou Profissional
                   </Link>
                 </div>
-                <p className="mt-3 text-sm text-gray-500">
+                <p className="mt-3 text-sm text-gray-600">
                   Cadastre-se grátis hoje mesmo.
                 </p>
               </div>
@@ -48,7 +48,7 @@ export default async function LandingPage() {
             <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center">
               <div className="relative mx-auto w-full rounded-lg shadow-lg lg:max-w-md overflow-hidden">
                   <div className="relative block w-full bg-white rounded-lg overflow-hidden h-96">
-                     <div className="absolute top-0 left-0 w-full h-full bg-gray-200 animate-pulse flex items-center justify-center text-gray-400">
+                     <div className="absolute top-0 left-0 w-full h-full bg-gray-200 animate-pulse flex items-center justify-center text-gray-500">
                         {/* Placeholder for Hero Image */}
                         <div className="text-center p-8">
                             <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -81,7 +81,7 @@ export default async function LandingPage() {
                   </div>
                   <p className="ml-16 text-lg leading-6 font-medium text-gray-900">1. Descreva o Pedido</p>
                 </dt>
-                <dd className="mt-2 ml-16 text-base text-gray-500">
+                <dd className="mt-2 ml-16 text-base text-gray-600">
                   Conte o que você precisa, adicione fotos e defina a localização. É rápido e fácil.
                 </dd>
               </div>
@@ -93,7 +93,7 @@ export default async function LandingPage() {
                   </div>
                   <p className="ml-16 text-lg leading-6 font-medium text-gray-900">2. Receba Propostas</p>
                 </dt>
-                <dd className="mt-2 ml-16 text-base text-gray-500">
+                <dd className="mt-2 ml-16 text-base text-gray-600">
                   Profissionais qualificados enviarão orçamentos. Compare preços e avaliações.
                 </dd>
               </div>
@@ -105,7 +105,7 @@ export default async function LandingPage() {
                   </div>
                   <p className="ml-16 text-lg leading-6 font-medium text-gray-900">3. Contrate com Segurança</p>
                 </dt>
-                <dd className="mt-2 ml-16 text-base text-gray-500">
+                <dd className="mt-2 ml-16 text-base text-gray-600">
                   Aceite a melhor oferta, combine os detalhes pelo chat e avalie o serviço ao final.
                 </dd>
               </div>
@@ -132,15 +132,15 @@ export default async function LandingPage() {
       <footer className="bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
           <div className="flex justify-center space-x-6 md:order-2">
-            <span className="text-gray-400 hover:text-gray-500">
+            <span className="text-gray-600 hover:text-gray-700 transition">
               Instagram
             </span>
-            <span className="text-gray-400 hover:text-gray-500">
+            <span className="text-gray-600 hover:text-gray-700 transition">
               Twitter
             </span>
           </div>
           <div className="mt-8 md:mt-0 md:order-1">
-            <p className="text-center text-base text-gray-400">
+            <p className="text-center text-base text-gray-600">
               &copy; 2026 AchaPro. Todos os direitos reservados.
             </p>
           </div>
