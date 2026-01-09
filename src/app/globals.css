@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827; /* text-gray-900 equivalent for better contrast */
 }
 
 @theme inline {
@@ -12,15 +12,19 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure inputs and textareas have dark text and good contrast */
+input, textarea, select {
+  color: #111827; /* gray-900 */
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6b7280; /* gray-500 - standard placeholder color */
 }

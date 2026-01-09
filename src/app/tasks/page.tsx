@@ -82,7 +82,7 @@ export default async function TasksPage(props: TasksPageProps) {
         ) : (
           <div className="text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
             <h3 className="text-lg font-medium text-gray-900">Nenhuma tarefa encontrada</h3>
-            <p className="mt-1 text-gray-500">Seja o primeiro a postar uma tarefa nesta categoria!</p>
+            <p className="mt-1 text-gray-600">Seja o primeiro a postar uma tarefa nesta categoria!</p>
           </div>
         )}
       </div>

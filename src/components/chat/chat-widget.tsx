@@ -119,7 +119,7 @@ export default function ChatWidget() {
                 )}
 
                 {!loading && matches.length === 0 && (
-                    <div className="text-center text-gray-500 text-sm mt-10 p-4">
+                    <div className="text-center text-gray-600 text-sm mt-10 p-4">
                         <p>Nenhuma conversa iniciada.</p>
                         <Link href="/tasks" className="text-blue-600 hover:underline mt-2 block">
                             Encontrar serviços
@@ -139,7 +139,7 @@ export default function ChatWidget() {
                                     {match.otherUserAvatar ? (
                                         <Image src={match.otherUserAvatar} alt={match.otherUserName} fill className="object-cover" />
                                     ) : (
-                                        <div className="flex items-center justify-center h-full text-gray-500 font-bold">
+                                        <div className="flex items-center justify-center h-full text-gray-600 font-bold">
                                             {match.otherUserName.charAt(0)}
                                         </div>
                                     )}
@@ -149,7 +149,7 @@ export default function ChatWidget() {
                                         <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-600 transition">{match.otherUserName}</p>
                                     </div>
                                     <p className="text-xs text-blue-600 font-medium truncate mb-1">{match.taskTitle}</p>
-                                    <p className="text-xs text-gray-500 truncate">{match.lastMessage}</p>
+                                    <p className="text-xs text-gray-600 truncate">{match.lastMessage}</p>
                                 </div>
                             </div>
                         </div>
